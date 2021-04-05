@@ -167,6 +167,19 @@ DECLARE @cname varchar(30),
 
 TRUNCATE TABLE sac_emp_15_0
 
+
+/*
+Scroll cursor: iterates through table sacxab_15_unique_records_5.
+	For each row:
+		if the counts value > 1 (i.e., more than one record corresponding to a specific biz name-lat-long combo),
+			then just pluck the first row from the duplicates and insert it into sac_emp_15_0
+		otherwise, just insert the row (since there's only one row)
+
+After doing scroll cursor loop, sac_emp_15_0 table will have distinct records based on
+	biz name, address, long/lat, naics, employee count, and infousaid
+	***there may be multiple businesses or employee types at each lat-long combo though.
+	
+*/
 DECLARE loop1 SCROLL CURSOR FOR SELECT cname,longitude,latitude,counts FROM sacxab_15_unique_records_5 FOR READ ONLY
 OPEN loop1
 FETCH loop1 INTO @cname,@longitude,@latitude,@counts
@@ -186,10 +199,13 @@ DEALLOCATE loop1
 alter table sac_emp_15_0
 add SACOGID bigint
 
+
+--adds sequential number ID as SACOGID
 declare @SACOGID bigint=0
 update sac_emp_15_0
 set @SACOGID=SACOGID=@SACOGID+1
 
+--add county, city, ZIP values to sac_emp_15_0 (which, from above steps, already has biz name, address, long/lat, naics, employee count, and infousaid)
 alter table sac_emp_15_0
 add County varchar(10),city varchar(16),zipcode float
 go
@@ -201,6 +217,7 @@ where a.cname=b.cname and a.longitude=b.longitude and a.latitude=b.latitude
 --42403 records do not have a city name
 --1 record does not have zipcode
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+--get total employment for yuba county from de-duplicated sac_emp_15_0 table (FYI, sac_emp_15_0 is for whole region, not just sac county
 select *
 --into sac_emp_15_0_yuba
 from sac_emp_15_0
@@ -213,11 +230,6 @@ from sac_emp_15_0_yuba
 --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 --repeat the steps above to get unique records for 2016
 --compare 2015 and 2016 through a cursor
-
-
-
-
-
 
 select *
 from sacxab_15_unique_records_3
@@ -232,11 +244,6 @@ where cname='WHACKY QUACKY MOTION DECOYS'
 select *
 from sac_emp_15_0_yuba
 where cname='WHACKY QUACKY MOTION DECOYS'
-
-
-
-
-
 
 select *
 from sac_emp_15_0
