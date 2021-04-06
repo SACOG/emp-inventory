@@ -1,0 +1,6 @@
+flag_code,description
+0,Record is likely unique and valid
+DZE,Possible duplicate; zero employees
+DNN,Possible duplicate; unclassified NAICS code
+DMN,"Possible duplicate; shares NAICS code with 1 or more other records at same location, in addition to address and biz name"
+DUN,"Possible duplicate; different NAICS code, but shares same biz name and location as other record(s)"
