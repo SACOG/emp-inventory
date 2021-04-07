@@ -16,6 +16,7 @@ Python Version: 3.x
 
 
 import os
+import time
 
 import pandas as pd
 from fuzzywuzzy import fuzz
@@ -166,18 +167,24 @@ def dupe_flag_field(in_df):
     for i, latlongid in enumerate(latlon_uids):
         calc_dupe_flag(in_df, latlongid)
         
-        if i % 10 == 0:
+        if i % 1000 == 0:
             print(f"{i} of {tot_uids} unique lat-long locations checked for duplicates...")
     
     
 if __name__ == '__main__':
-    csv_in = r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv" # r"P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv"
+    csv_in = "P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv"
     
+    start_time = time.time()
     master_df = prep_master_df(csv_in)
     
     dupe_flag_field(master_df)
     
-    master_df.to_csv(r"test_outputs\test_out95817.csv", index=False)
+    
+    master_df.to_csv(r"P:\Employment Inventory\Employment 2020\test_csv\test_outFullRegion.csv", index=False)
+    
+    elapsed = time.time() - start_time
+    elapsed_mins = elapsed / 60
+    print(f"Cleaning process completed in {elapsed_mins} minutes.")
     
     
     
