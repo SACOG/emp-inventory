@@ -23,6 +23,7 @@ import pandas as pd
 from fuzzywuzzy import fuzz
 
 from pandas_memory_optimization import memory_optimization
+from pandas2sqltable import df_to_sqltbl
 
 # fuzzywuzzy fuzz threshold ratio
 fuzz_threshold = 80
@@ -240,6 +241,10 @@ if __name__ == '__main__':
     out_fc_name = "EmpInvTest"
     output_fgdb = r"I:\Projects\Darren\EmpInventory\EmploymentInventory.gdb"
     
+    make_sql = True
+    sql_db = "EMP2020"
+    sql_tbl_name = "TestDupeFlag"
+    
     #===============================================================================
     dt_suffix = str(dt.datetime.now().strftime('%Y%m%d_%H%M'))
     
@@ -260,7 +265,11 @@ if __name__ == '__main__':
         out_csv_name = f"{out_fc_name}.csv"
         out_csv_path = os.path.join(out_csv_dir, out_csv_name)
         master_df.to_csv(out_csv_path, index=False)
-        print(f"successfully exported CSV to {out_csv_path}")
+        print(f"Successfully exported CSV to {out_csv_path}")
+        
+    if make_sql:
+        sql_tbl_name = f"{sql_tbl_name}{dt_suffix}"
+        df_to_sqltbl(master_df, sql_db, sql_tbl_name)
     
     elapsed = time.time() - start_time
     elapsed_mins = round(elapsed / 60, 1)
