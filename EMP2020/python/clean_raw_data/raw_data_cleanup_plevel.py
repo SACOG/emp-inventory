@@ -94,6 +94,7 @@ def calc_dupe_flag(in_df, loc_uid_val):
     """Takes in a unique ID value for a lat-long pair, and checks for
     potential duplicate businesses at that same lat-long location"""
     
+    flag_notdupe = '0'
     flag_namedupeonly = "DSM_only" # flag indicating that the business has high match with other biz on site, but no other matching attributes, and has > 0 employees
     flag_dupnaics4 = "DMN" # biz has matching name and 4-digit NAICS code with other biz on site
     flag_zeroemp = "DZE" # biz has matching name as other biz on site and has zero employees; could have differing NAICS
@@ -104,7 +105,7 @@ def calc_dupe_flag(in_df, loc_uid_val):
     
     # if only 1 record, then mark the record as being "okay", and not likely a dupe
     if df_site.shape[0] == 1:
-        in_df.loc[in_df[fld_latlong_id] == loc_uid_val, fld_dupeflag] = '0'
+        in_df.loc[in_df[fld_latlong_id] == loc_uid_val, fld_dupeflag] = flag_notdupe
         
     else:
         df_site_drecs = df_site.to_dict(orient='records')
@@ -137,7 +138,7 @@ def calc_dupe_flag(in_df, loc_uid_val):
             # if only 1 record with the same company name, it means there are no duplicate company names
             # for the current record, and you can assume that it is okay and can be marked as a non-duplicate
             if df_fuzzymatch.shape[0] < 1:
-                in_df.loc[in_df[fld_locnum] == locnum, fld_dupeflag] = '0'
+                in_df.loc[in_df[fld_locnum] == locnum, fld_dupeflag] = flag_notdupe
                 continue
             
             # if more than 1 fuzzy name match on the site, the current record may have duplicates or be a duplicate.
