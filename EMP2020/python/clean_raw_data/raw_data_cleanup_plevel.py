@@ -232,12 +232,12 @@ def export_to_fc(in_df, out_path):
     
     
 if __name__ == '__main__':
-    csv_in = r"P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # "P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv"
+    csv_in = r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv" # "P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv"
     
     make_csv = False
     out_csv_dir = r'P:\Employment Inventory\Employment 2020\test_csv'
     
-    make_fc = True
+    make_fc = False
     out_fc_name = "EmpInvTest"
     output_fgdb = r"I:\Projects\Darren\EmpInventory\EmploymentInventory.gdb"
     
