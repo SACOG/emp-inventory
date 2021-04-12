@@ -22,7 +22,7 @@ import datetime as dt
 import pandas as pd
 from fuzzywuzzy import fuzz
 
-from pandas_memory_optimization import memory_optimization
+# from pandas_memory_optimization import memory_optimization
 from pandas2sqltable import df_to_sqltbl
 
 # fuzzywuzzy fuzz threshold ratio
@@ -138,6 +138,10 @@ def calc_dupe_flag(in_df, loc_uid_val):
             
             # if only 1 record with the same company name, it means there are no duplicate company names
             # for the current record, and you can assume that it is okay and can be marked as a non-duplicate
+            
+            tname = '1 STOP AUTO SALES'
+            if cname != tname and tname in cnames_fuzzmatch: import pdb; pdb.set_trace()
+            
             if df_fuzzymatch.shape[0] < 1:
                 in_df.loc[in_df[fld_locnum] == locnum, fld_dupeflag] = flag_notdupe
                 continue
@@ -201,38 +205,21 @@ def export_to_fc(in_df, out_path):
     '''export the resulting dataframe directly to the GIS FGDB you are mapping from'''
     
     import arcpy
-    import geopandas as gpd
     from arcgis.features import GeoAccessor, GeoSeriesAccessor
     
     arcpy.env.overwriteOutput = True
-    convert_cats2strings(in_df)
-    
-    
-    #-----------------------
-    # stupidly, the to_featureclass function throws an error. DC raised issue on ESRI Geonet on 4/7/2021
-    # (subject "System Error when exporting Spatially Enabled DataFrame to Feature Class")
+    convert_cats2strings(in_df) # cannot export categorical pandas dtype to spatial files, so convert with this
     
     sdf = GeoAccessor.from_xy(in_df, fld_lon, fld_lat)
-    
-    # import pdb; pdb.set_trace()
+
     sdf.spatial.to_featureclass(out_path)
     #-----------------------------
-    
-    # # As a workaround, am exporting geopandas gdf to geojson, then exporting geojson to feature class
-    # gdf = gpd.GeoDataFrame(in_df, geometry=gpd.points_from_xy(in_df[fld_lon], in_df[fld_lat]))
-    
-    # temp_geojson = r'I:\Projects\Darren\EmpInventory\geojson\TEMP.geojson'
-    
-    # import pdb; pdb.set_trace()
-    # gdf.to_file(temp_geojson, driver='GeoJSON')
-    
-    # arcpy.JSONToFeatures_conversion(temp_geojson, out_path)
     
     print(f"successfully exported to feature class {out_path}")
     
     
 if __name__ == '__main__':
-    csv_in = r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv" # "P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv"
+    csv_in = r"P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # "P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv"
     
     make_csv = False
     out_csv_dir = r'P:\Employment Inventory\Employment 2020\test_csv'
@@ -241,7 +228,7 @@ if __name__ == '__main__':
     out_fc_name = "EmpInvTest"
     output_fgdb = r"I:\Projects\Darren\EmpInventory\EmploymentInventory.gdb"
     
-    make_sql = True
+    make_sql = False
     sql_db = "EMP2020"
     sql_tbl_name = "TestDupeFlag"
     
@@ -255,7 +242,7 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    master_df = prep_master_df(csv_in)
+    master_df = prep_master_df(csv_in)    
     dupe_flag_field(master_df)
     
     if make_fc:
