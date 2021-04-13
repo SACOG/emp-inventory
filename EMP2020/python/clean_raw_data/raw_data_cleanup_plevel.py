@@ -34,6 +34,7 @@ fld_name = 'CONAME'
 fld_staddr = 'STADDR'
 fld_zip = 'ZIP'
 fld_empcnt = 'LOCEMP'
+fld_home = 'HOME'
 fld_naics = 'NAICS'
 fld_naicsdesc = 'NAICSD'
 fld_lat = 'latitude'
@@ -60,7 +61,7 @@ def prep_master_df(in_csv):
             potential duplicate the record is
     """
     in_cols = [fld_locnum, fld_name, fld_staddr, fld_zip, fld_empcnt, fld_naics,
-               fld_naicsdesc, fld_lat, fld_lon, fld_geolev]
+               fld_naicsdesc, fld_home, fld_lat, fld_lon, fld_geolev]
     
     # load raw CSV into dataframe
     print("loading and preparing master dataframe...")
@@ -224,7 +225,7 @@ if __name__ == '__main__':
     make_csv = False
     out_csv_dir = r'P:\Employment Inventory\Employment 2020\test_csv'
     
-    make_fc = False
+    make_fc = True
     out_fc_name = "EmpInvTest"
     output_fgdb = r"I:\Projects\Darren\EmpInventory\EmploymentInventory.gdb"
     
@@ -237,7 +238,7 @@ if __name__ == '__main__':
     
     if out_fc_name is None:
         out_fc_name = os.path.splitext(os.path.basename(csv_in))[0]
-        out_fc_name = f"{out_fc_name}{dt_suffix}"
+    out_fc_name = f"{out_fc_name}{dt_suffix}"
     out_fc_path = os.path.join(output_fgdb, out_fc_name)
     
     start_time = time.time()

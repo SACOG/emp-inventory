@@ -86,3 +86,6 @@ FROM #uniqflag df
 	--	ON df.dupe_flag = t2.dupe_flag
 GROUP BY df.dupe_flag
 
+
+SELECT * FROM #dmn
+
