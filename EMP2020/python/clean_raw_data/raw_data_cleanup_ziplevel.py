@@ -90,6 +90,22 @@ def prep_master_df(in_csv):
     df = df.merge(dfu, left_on=[fld_lat, fld_lon], right_on=[fld_lat, fld_lon])
     
     return df
+
+
+def is_fuzz_match(lst_check_vals, lst_ref_vals):
+    '''Checks each value in lst_check_vals against its same position
+    in lst_ref_vals and sees if it meets fuzzy match criteria. If all fuzzy match
+    criteria meet, then return True, otherwise False'''
+    
+    valzip = zip(lst_check_vals, lst_ref_vals)
+    for check_val, ref_val in valzip:
+        if fuzz.ratio(check_val, ref_val) > fuzz_threshold:
+            result = True
+        else:
+            result = False
+            break # if the fuzz match between any check val and ref val pair is too low, then stop because the whole record is thus not a match
+        
+    return result
     
 
 def calc_dupe_flag(in_df, loc_uid_val):
@@ -104,13 +120,10 @@ def calc_dupe_flag(in_df, loc_uid_val):
     
     # make df of all businesses at the location
     df_site = in_df.loc[in_df[fld_zip] == loc_uid_val].copy()
+    calc_dupe_flag.reccnt = df_site.shape[0]
     
     # must set name and address fields to not be np.NaN values, which cause fuzz.ratio function to mess up. 
     df_site[[fld_name, fld_staddr]] = df_site[[fld_name, fld_staddr]].fillna('-')
-    
-    # add field with concatenated name and address
-    fld_nameaddr = 'name_addr_comb'
-    df_site[fld_nameaddr] = df_site[fld_name].str.cat(df_site[fld_staddr], sep=' ')
     
     # if only 1 record, then mark the record as being "okay", and not likely a dupe
     if df_site.shape[0] == 1:
@@ -121,32 +134,44 @@ def calc_dupe_flag(in_df, loc_uid_val):
         
         # loop through each record on the site
         for drec in df_site_drecs:
+            
             # if a dupe flag has already been given to the record, skip it
             if drec[fld_dupeflag] != '':
                 continue
             
             locnum = drec[fld_locnum]
             cname = drec[fld_name]
-            nameaddr = drec[fld_nameaddr]
+            addr = drec[fld_staddr]
             empcnt = drec[fld_empcnt]
             naics4 = drec[fld_naics4]
             
-            # make a list of all locations at the site where the concatenated name-address (n-a) combo significantly matches
-            # the n-a combo in the record of the current iteration
-            
-            # list of all name-address (n-a) combos at the current lat-long location
-            nacombs_site = df_site[fld_nameaddr]
-            
-            # list of all n-a combos at the site whose n-a combo has high match value with the current iteration's n-a combo
             try:
-                nacombs_fuzzmatch = [nacomb for nacomb in nacombs_site if fuzz.ratio(nameaddr, nacomb) > fuzz_threshold]
+                # list of all name-address (n-a) combos at the current lat-long location or zone
+                nacombs_site = df_site[[fld_locnum, fld_name, fld_staddr]]
+                
+                # make list of locnums where there's a high fuzzy match for both the name and the address
+                # NOTE - doing a fuzzy comparison for two fields makes the check much slower because it is
+                # doing twice as many checks!
+                locnums_fuzzmatch = []
+
+                for locnum_itr in nacombs_site[fld_locnum]:
+                    ref_vals = (cname, addr)
+                    check_vals = nacombs_site.loc[nacombs_site[fld_locnum] == locnum_itr] \
+                        .copy() \
+                        [[fld_name, fld_staddr]] \
+                        .to_records(index=False)[0]
+                        
+                    if is_fuzz_match(check_vals, ref_vals): locnums_fuzzmatch.append(locnum_itr)
+                    
             except:
-                print(locnum, cname, drec[fld_staddr], nameaddr)
+                print(locnum, cname, drec[fld_staddr])
                 import pdb; pdb.set_trace()
+                
+                
             # from the dataframe of all locations at the site, make a subset that are just those
             # with a high match value for the current iteration's name AND that do not have the same locnum
             # (because a business cannot be a duplicate of itself)
-            df_fuzzymatch = df_site.loc[(df_site[fld_nameaddr].isin(nacombs_fuzzmatch)) & (df_site[fld_nameaddr] != nameaddr)]
+            df_fuzzymatch = df_site.loc[(df_site[fld_locnum].isin(locnums_fuzzmatch)) & (df_site[fld_locnum] != locnum)].copy()
             
             # if only 1 record with the same company name, it means there are no duplicate company names
             # for the current record, and you can assume that it is okay and can be marked as a non-duplicate
@@ -197,16 +222,21 @@ def convert_cats2strings(in_df):
             in_df[cname] = in_df[cname].astype('str')
     
 
-def dupe_flag_field(in_df):
+def dupe_flag_field(in_df, test_sample_size=None):
+    
+    if test_sample_size:
+        in_df = in_df.iloc[:test_sample_size].copy()
+    
     zone_uids = in_df[fld_zip].unique()
     tot_uids = len(zone_uids)
     
-    print("checking duplicate status for each unique site...")
-    for i, latlongid in enumerate(zone_uids):
-        calc_dupe_flag(in_df, latlongid)
+    print("checking duplicate status for each zone...")
+    for i, zoneid in enumerate(zone_uids):
+        calc_dupe_flag(in_df, zoneid)
         
-        if i % 10 == 0:
-            print(f"{i} of {tot_uids} unique ZIP code centroids checked for duplicates...")
+        # if i % 10 == 0:
+        print(f"{calc_dupe_flag.reccnt} records processed in zone {zoneid}...")
+        print(f"\t{i + 1} of {tot_uids} unique ZIP code centroids checked for duplicates...")
             
 def export_to_fc(in_df, out_path):
     '''export the resulting dataframe directly to the GIS FGDB you are mapping from'''
@@ -250,7 +280,7 @@ if __name__ == '__main__':
     start_time = time.time()
     
     master_df = prep_master_df(csv_in)    
-    dupe_flag_field(master_df)
+    dupe_flag_field(master_df, test_sample_size=None)
     
     if make_fc:
         export_to_fc(master_df, out_fc_path) 
