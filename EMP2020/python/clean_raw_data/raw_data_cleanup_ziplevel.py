@@ -6,6 +6,9 @@ Purpose: For businesses with *ZIP-code level* (not parcel-level) geographic accu
         -flag field indicating if the record is a potential duplicate and what type
         of duplicate it is. In turn, this can help guide action on how to further clean the file.
         
+    WARNING: This script is SLOW. To calculate ~42,000 rows it took about almost 5.5 hours
+        More details are within the calc_dupe_flag function
+        
           
 Author: Darren Conly
 Last Updated: Apr 2021
@@ -110,7 +113,16 @@ def is_fuzz_match(lst_check_vals, lst_ref_vals):
 
 def calc_dupe_flag(in_df, loc_uid_val):
     """Takes in a unique ID value for a lat-long pair, and checks for
-    potential duplicate businesses at that same lat-long location"""
+    potential duplicate businesses at that same lat-long location
+    
+    WARNING: this function is SLOW because it must go through every record in each zone and
+        compare its name and address to every other record in the zone. It would be much
+        faster to just concatenate the name + address and fuzzy compare on the combined name + address,
+        but doing so leads to many false matches, specifically, it will think 2 different businesses
+        are the same if they are at the same address but have significantly different business names.
+    """
+    
+    
     
     flag_notdupe = '0'
     flag_namedupeonly = "DSM_only" # flag indicating that the business has high match with other biz on site, but no other matching attributes, and has > 0 employees
