@@ -35,6 +35,8 @@ fld16_id = 'INFOID_16'
 fld16_coname = 'NAME'
 fld16_staddr = 'ADDRESS'
 fld16_zip = 'ZIP'
+fld16_emp = 'F_EMP16'
+fld16_notes = 'NOTES'
 
 # other fields that get added in this script
 fld_jflag = 'join_flag'
@@ -49,7 +51,8 @@ fld_jflag = 'join_flag'
 
 
 df = pd.read_csv(in_csv2020)
-df16 = pd.read_csv(in_csv2016, usecols = [fld16_id, fld16_coname, fld16_staddr, fld16_zip])
+df16 = pd.read_csv(in_csv2016, usecols = [fld16_id, fld16_coname, fld16_staddr, 
+                                          fld16_zip, fld16_emp, fld16_notes])
 
 df[fld_jflag] = '_'
 
@@ -97,8 +100,8 @@ def get_fuzzy_matches(in_row, search_df):
     '''If 2016 values for name and address are not in the 2020 table, then do a
     fuzzy match between the 2016 name and 2020 anme, and 2016 address and 2020 address'''
     
-    name1 = in_row[fld_coname20]
-    addr1 = in_row[fld_staddr20]
+    name1 = str(in_row[fld_coname20])
+    addr1 = str(in_row[fld_staddr20])
     zipcode = in_row[fld_zip]
     
     # filtering to only records within same ZIP code to speed things up.
@@ -126,8 +129,12 @@ def get_fuzzy_matches(in_row, search_df):
     
     name_fzmatch = temp_df[fld16_coname]
     addr_fzmatch = temp_df[fld16_staddr]
+    emp_fzmatch = temp_df[fld16_emp]
+    notes_fzmatch = temp_df[fld16_notes]
+    id_fzmatch = temp_df[fld16_id]
     
-    return {'name': name_fzmatch, 'addr': addr_fzmatch}
+    return {fld16_coname: name_fzmatch, fld16_staddr: addr_fzmatch,
+            fld16_emp: emp_fzmatch, fld16_notes: notes_fzmatch, fld16_id: id_fzmatch}
         
     
     
@@ -158,7 +165,7 @@ def get_jflag_1(in_row):
     
     # comparing "20" fields to "16" fieles within master table (not comparing to or looking at 2016 table)
     if id_match:
-        t1 = perf()
+        # t1 = perf()
         name_fuzzmatch = fuzz.ratio(name20, name16) > match_threshold
         addr_fuzzmatch = fuzz.ratio(addr20, addr16) > match_threshold
         
@@ -179,12 +186,15 @@ def get_jflag_1(in_row):
         if name_addr_ematch:
             output = jflag_nmaddrematch # no id match, but exact name and address match
         else:
-            t1 = perf()
+            # t1 = perf()
             fuzz_dict = get_fuzzy_matches(in_row, df16)
             
             if fuzz_dict: # if there's a fuzzy match for 2016 in the 2016 table, then update the "16" fields in the master table
-                df.loc[df[fld_locnum20] == id20, fld_coname16] = fuzz_dict['name']
-                df.loc[df[fld_locnum20] == id20, fld_staddr16] = fuzz_dict['addr'] 
+                df.loc[df[fld_locnum20] == id20, fld_coname16] = fuzz_dict[fld16_coname]
+                df.loc[df[fld_locnum20] == id20, fld_staddr16] = fuzz_dict[fld16_staddr] 
+                df.loc[df[fld_locnum20] == id20, fld_emp16] = fuzz_dict[fld16_emp]
+                df.loc[df[fld_locnum20] == id20, fld_notes16] = fuzz_dict[fld16_notes]
+                df.loc[df[fld_locnum20] == id20, fld_infoid16] = fuzz_dict[fld16_id]
                 
                 output = jflag_nmaddrfmatch # no id match, but fuzzy name and address match to 2016 (requires looking up to 2016 table)
             else:
@@ -206,22 +216,40 @@ elapsed = perf() - stime
 print(f"completed in {elapsed} seconds")
 """
 
-# FULL RUN, THIS LIKELY TAKES 4-5 HOURS
-df_rows = df.shape[0]
-# apply the function above to calculate each record's join flag
-print(f"applying to FULL dataframe with {df_rows} rows...")
-df[fld_jflag] = df.apply(lambda x: get_jflag_1(x), axis=1)
+do_full = True
+make_csv = True
+
+if do_full:
+    # FULL RUN, THIS LIKELY TAKES 4-5 HOURS
+    df_rows = df.shape[0]
+    # apply the function above to calculate each record's join flag
+    print(f"applying to FULL dataframe with {df_rows} rows...")
+    t1 = perf()
+    df[fld_jflag] = df.apply(lambda x: get_jflag_1(x), axis=1)
+    el_mins = (perf() - t1) / 60
+    print(f"finished processing {df_rows} in {el_mins} mins.")
+
+else:
+    test_rowcnt = 100
+    df = df.head(test_rowcnt)
+    
+    # apply the function above to calculate each record's join flag
+    print(f"applying to TEST dataframe with {test_rowcnt} rows...")
+    t1 = perf()
+    df[fld_jflag] = df.apply(lambda x: get_jflag_1(x), axis=1)
+    el_mins = (perf() - t1) / 60
+    print(f"finished processing in {el_mins} mins.")
+    
+summary_df = df[fld_jflag].value_counts()
+print(f"\nSummary breakdown of join flags: \n{summary_df}")
 
 
-"""
-# TEST CELL, DELETE WHEN DONE (4/27/2021)
-df_test = df.loc[df[fld_coname20] == 'SUTTER ROSEVILLE MEDICAL CTR']
-
-dft1 = df_test.iloc[0]
-dft1
-
-df[fld_jflag].value_counts()
-"""
-out_csv = r"\\data-svr\Monitoring\Employment Inventory\Employment 2020\SQL\RecsAll_w_2016jnflag_20210427.csv"
-print(f"writing to csv {out_csv}")
-# df.to_csv(out_csv, index=False)
+if make_csv:
+    import os
+    import datetime as dt
+    suff_ts = str(dt.datetime.now().strftime('%Y%m%d_%H%M'))
+    out_dir = r"\\data-svr\Monitoring\Employment Inventory\Employment 2020\SQL"
+    out_csv = os.path.join(out_dir, f"RecsAll_w_2016jnflag_{suff_ts}.csv")
+    print(f"writing to csv {out_csv}")
+    df.to_csv(out_csv, index=False)
+    print("Done!")
