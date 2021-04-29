@@ -226,8 +226,8 @@ if do_full:
     print(f"applying to FULL dataframe with {df_rows} rows...")
     t1 = perf()
     df[fld_jflag] = df.apply(lambda x: get_jflag_1(x), axis=1)
-    el_mins = (perf() - t1) / 60
-    print(f"finished processing {df_rows} in {el_mins} mins.")
+    el_mins = round((perf() - t1) / 60, 1)
+    print(f"finished processing {df_rows} rows in {el_mins} mins.")
 
 else:
     test_rowcnt = 100
@@ -237,8 +237,8 @@ else:
     print(f"applying to TEST dataframe with {test_rowcnt} rows...")
     t1 = perf()
     df[fld_jflag] = df.apply(lambda x: get_jflag_1(x), axis=1)
-    el_mins = (perf() - t1) / 60
-    print(f"finished processing in {el_mins} mins.")
+    el_mins = round((perf() - t1) / 60, 1)
+    print(f"finished processing {test_rowcnt} rows in {el_mins} mins.")
     
 summary_df = df[fld_jflag].value_counts()
 print(f"\nSummary breakdown of join flags: \n{summary_df}")
