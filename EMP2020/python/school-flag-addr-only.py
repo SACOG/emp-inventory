@@ -22,7 +22,6 @@ Python Version: 3.x
 
 import pandas as pd
 from fuzzywuzzy import fuzz
-from fuzzywuzzy import process as fuzzproc
 
 
 def match_score(in_row, checkname, checkaddr):
