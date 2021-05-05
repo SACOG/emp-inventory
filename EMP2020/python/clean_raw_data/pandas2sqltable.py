@@ -34,13 +34,14 @@ def df_to_sqltbl(in_df, dbname, tbl_name, servername='SQL-SVR', trustedconn='yes
     print(f"Successfully loaded dataframe to SQL table {tbl_name} in the {dbname} database.")
     
 if __name__ == '__main__':
-    test_csv = r"P:\Employment Inventory\Employment 2020\CSVs with Flags\EmpInvDupeFlag_All_20210429_ZIP_LU.csv"
+    in_csv = r"P:\Employment Inventory\Employment 2020\SQL\test_school_flag_no_naicsfilt.csv"
     
     db="EMP2020"
-    test_tbl_name = "EmpInvDupeFlag_All_20210429_ZIP_LU"
+    sql_tbl_name = "TEST_school_flag_no_naicsfilt"
     
-    df = pd.read_csv(test_csv)
-    df_to_sqltbl(df, db, test_tbl_name)
+    df = pd.read_csv(in_csv)
+    
+    df_to_sqltbl(df, db, sql_tbl_name)
     
     
     

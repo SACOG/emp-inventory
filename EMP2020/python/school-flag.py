@@ -14,6 +14,8 @@ Copyright:   (c) SACOG
 Python Version: 3.x
 """
 
+from time import perf_counter as perf
+
 import pandas as pd
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process as fuzzproc
@@ -37,19 +39,32 @@ def fuzz_match(in_row, compare_df):
     Returns name and address from the supplemental file, along with the match score'''
     # import pdb; pdb.set_trace()
     
-    chkname = in_row[col_coname]
-    chkaddr = in_row[col_coaddr]
+    chkname = str(in_row[col_coname])
+    chkaddr = str(in_row[col_coaddr])
+    zipcode = str(in_row[col_cozip])
+    
+    # import pdb; pdb.set_trace()
+    
+    compare_df = compare_df.loc[compare_df[col_stb_zip] == zipcode] # filter so that you only look in same ZIP code. Speeds things up.
+    
+    # if no records in the comparison table have the ZIP code from Data Axle, then skip.
+    if compare_df.shape[0] < 1:
+        return in_row
     
     check_recs = compare_df[[col_stb_name, col_stb_addr]].to_records(index=False)
     
     out_rows = []
     
     for rec in check_recs:
-        name = rec[0]
-        addr = rec[1]
+        name = str(rec[0])
+        addr = str(rec[1])
         
-        namescore = fuzz.ratio(name, chkname)
-        addrscore = fuzz.ratio(addr, chkaddr)
+        try:
+            namescore = fuzz.ratio(name, chkname)
+            addrscore = fuzz.ratio(addr, chkaddr)
+        except TypeError:
+            print("Type error found. Check the arguments entered for fuzz.ratio().")
+            import pdb; pdb.set_trace()
         
         tot_score = namescore + addrscore
         out_rows.append([name, namescore, addr, addrscore, tot_score])
@@ -72,8 +87,6 @@ def fuzz_match(in_row, compare_df):
     if df[col_st_namescore] < min_match_threshold or df[col_st_addrscore] < min_match_threshold:
         return in_row
     else:
-
-        
         for col in [col_st_name, col_st_namescore, col_st_addr, col_st_addrscore]:
             in_row[col] = df[col]
         
@@ -97,17 +110,20 @@ if __name__ == '__main__':
     col_stb_name = 'SCHL_NAME'
     col_stb_addr = 'FULLSTREET'
     col_stb_cnty = 'County'
+    col_stb_zip = 'ZIP'
     
-    supp_csv_cols = [col_stb_name, col_stb_addr, col_stb_cnty]
+    supp_csv_cols = [col_stb_name, col_stb_addr, col_stb_cnty, col_stb_zip]
 
     col_naics4 = 'naics4'
     col_coname = 'coname'
     col_coaddr = 'staddr'
+    col_cozip = 'zip'
     
     # specify naics school code. If empty list, will not filter for naics code.
     naics4_school = [] # [6111]
     
     #==================RUN SCRIPT==================
+    start_time = perf()
     
     # added columns
     col_st_name = 'stbl_name'
@@ -133,13 +149,19 @@ if __name__ == '__main__':
     
     
     print("calculating matches and match scores...")
+    i = 0
+    tot_items = dfm_school.shape[0]
     for key, row in dfm_school_dict.items():
-        # try:
         dfm_school_dict[key] = fuzz_match(row, dfs)
-        # except:
-        #     import pdb; pdb.set_trace()
+        
+        i += 1
+        
+        if i % 10_000 == 0:
+            print(f"{i} out of {tot_items} records checked.")
             
     out_df = pd.DataFrame.from_dict(dfm_school_dict, orient='index')
     
     out_df.to_csv(out_csv, index=False)
-    print("success!")
+    elapsed = round((perf() - start_time) / 60, 2)
+    
+    print(f"\nSuccess! Completed in {elapsed} mins. Output file is {out_csv}.")
