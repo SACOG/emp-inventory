@@ -51,8 +51,6 @@ def fuzz_match(in_row, compare_df):
         namescore = fuzz.ratio(name, chkname)
         addrscore = fuzz.ratio(addr, chkaddr)
         
-        
-        
         tot_score = namescore + addrscore
         out_rows.append([name, namescore, addr, addrscore, tot_score])
         
@@ -92,6 +90,8 @@ if __name__ == '__main__':
     master_csv_in = r"P:\Employment Inventory\Employment 2020\SQL\RecsAll_w_2016jnflag_20210419.csv" # path to main Data Axle CSV with flags on it
     supp_csv_in = r"\\data-svr\Monitoring\Employment Inventory\Employment 2020\working\pieces\education\Schools_2020_for_Darren.csv"
     
+    out_csv = r'P:\Employment Inventory\Employment 2020\SQL\test_school_flag_no_naicsfilt.csv'
+    
     min_match_threshold = 70 # if fuzz match for address or name is below this number, will mark as zero (not a match)
     
     col_stb_name = 'SCHL_NAME'
@@ -104,7 +104,8 @@ if __name__ == '__main__':
     col_coname = 'coname'
     col_coaddr = 'staddr'
     
-    naics4_school = [6111]
+    # specify naics school code. If empty list, will not filter for naics code.
+    naics4_school = [] # [6111]
     
     #==================RUN SCRIPT==================
     
@@ -124,7 +125,10 @@ if __name__ == '__main__':
     dfm[col_st_addrscore] = 0
     
     # filter to only have records that are likely schools
-    dfm_school = dfm.loc[dfm[col_naics4].isin(naics4_school)] # .head(100)
+    if naics4_school == []:
+        dfm_school = dfm
+    else:
+        dfm_school = dfm.loc[dfm[col_naics4].isin(naics4_school)] # .head(100)
     dfm_school_dict = dfm_school.to_dict(orient='index')
     
     
@@ -137,5 +141,5 @@ if __name__ == '__main__':
             
     out_df = pd.DataFrame.from_dict(dfm_school_dict, orient='index')
     
-    out_df.to_csv(r'P:\Employment Inventory\Employment 2020\SQL\test_school_flag.csv', index=False)
+    out_df.to_csv(out_csv, index=False)
     print("success!")

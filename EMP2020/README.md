@@ -60,3 +60,21 @@ The process described in this section includes the following high-level steps:
 
 The first pass of duplicate flagging happened for the roughly 84% of records that had parcel-level or entry-point-level latitude-longitude accuracy. While the process is detailed in the script `raw_data_cleanup_plevel.py`, the basic steps used the following process:
 
+#### ZIP-code level flags
+
+About 16% of Data Axle records were geocoded only to a ZIP code centroid. Many of these are businesses that only have a P.O. Box, for example, and thus do not have a physical parcel address. 
+
+<INSERT PROCESS EXPLAINING HOW DUPE FLAGS WERE FOUND FOR THIS>
+
+### Step 2 - Add 2016 land use data field
+
+Knowing the land use for each Data Axle (DA) record helps identify if employment makes sense. E.g., if a business is marked as non-home business, has employees, but is located on a residential parcel, that is suspicious and requires further checking.
+
+We tagged the land use data to each DA record by creating a layer of land uses from the 2016 parcel polygon file, then using a GIS spatial join to tag the land uses to individual DA records.
+
+### Step 3 - Join 2016 employment inventory data
+
+Joining several attributes from the cleaned, finalized 2016 employment inventory help determine if a 2020 record is likely to be a duplicate, as well as show changes in a business's size or location between 2016-2020, where possible. NOTE that DA data are pretty messy, and well over half of 2020 records did not have a 2016 match.
+
+The details of the process are contained in the [JoinFlags16_20.py script](https://github.com/SACOG/emp-inventory/blob/dc/improve-2016-fuzzy-tagger/EMP2020/python/JoinFlags16_20.py) which, in addition to joining 2016 records' data to 2020 records, also adds a join_flag field indicating how well the join happened (e.g., was it successful, sort of successful, etc.). The join_flag values include:
+
