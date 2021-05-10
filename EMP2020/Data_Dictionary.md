@@ -2,10 +2,10 @@
 
 The tables below provide field-level information for the data included in the raw Data Axle table as well as the fields that were added to the raw table.
 
-* [Raw Data Axle data fields](##raw-data-axle-data-fields)
-* [Fields added to Data Axle table](##fields-added-to-the-raw-data-axle-table)
-* [join_flag field values](##join_flag-field-values)
-* [dupe_flag field values](##dupe_flag-field-values)
+* [Raw Data Axle data fields](#raw-data-axle-data-fields)
+* [Fields added to Data Axle table](#fields-added-to-the-raw-data-axle-table)
+* [join_flag field values](#join_flag-field-values)
+* [dupe_flag field values](#dupe_flag-field-values)
 
 
 
