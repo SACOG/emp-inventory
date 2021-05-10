@@ -150,7 +150,7 @@ The raw employment inventory database delivered to us by Data Axle containes 127
 |     Field  Name     |                         Description                          |                        Values                         | Calculation  Method or Script |
 | :-----------------: | :----------------------------------------------------------: | :---------------------------------------------------: | :---------------------------: |
 |       naics4        |                First  4 digits of NAICS code                 |                           -                           |  raw_data_cleanup_plevel.py   |
-|      dupe_flag      |          If  and how the record may be a duplicate           | [See dupe_flag value table](##dupe_flag-field-values) |  raw_data_cleanup_plevel.py   |
+|      dupe_flag      |          If  and how the record may be a duplicate           | [See dupe_flag value table](#dupe_flag-field-values) |  raw_data_cleanup_plevel.py   |
 |      ZIP_geom       | ZIP  code that can be joined to SACOG's ZIP code polygon GIS file to allow mapping  of aggregate data at ZIP code level |                           -                           |       GIS spatial join        |
 |      LUTYPE16       |             Land  use type from 2016 parcel file             |                           -                           |       GIS spatial join        |
 |     res_nwfh_f      | 1/0  flag. Value of 1 means the business is not home based but is on a residential  parcel and should thus be investigated for errors. |                           -                           |     GIS field calculation     |
@@ -159,7 +159,7 @@ The raw employment inventory database delivered to us by Data Axle containes 127
 |        emp16        |        Business  employee count in 2016, if available        |                           -                           |       JoinFlags16_20.py       |
 |       notes16       |        Notes  from SACOG staff in 2016, if available         |                           -                           |       JoinFlags16_20.py       |
 |      infoid16       | Business  ID in 2016, if available. Corresponds to locnum field in Data Axle table |                           -                           |       JoinFlags16_20.py       |
-|      join_flag      | Results  of attempting to join the record to the 2016 table  | [see join_flag value table](##join_flag-field-values) |       JoinFlags16_20.py       |
+|      join_flag      | Results  of attempting to join the record to the 2016 table  | [see join_flag value table](#join_flag-field-values) |       JoinFlags16_20.py       |
 |    sch_tbl_name     | Name  from supplemental school data table with highest fuzzy match to a name in  Data Axle (fuzzy match score must be > 70) |                           -                           |        school-flag.py         |
 | sch_tbl_name_fscore | Fuzzy  match score of the name with highest fuzzy match score from school table with  a name in the Data Axle table (must be > 70, otherwise set to 0) |                           -                           |        school-flag.py         |
 |    sch_tbl_addr     | Street  address from supplemental school data table with highest fuzzy match to a  Street address in Data Axle (fuzzy match score must be > 70) |                           -                           |        school-flag.py         |
