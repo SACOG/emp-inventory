@@ -1,5 +1,5 @@
 """
-Name: pandas2sqltable.py
+Name: sqlqry2pandas.py
 Purpose: Export a pandas dataframe to a SQL Server table
     https://docs.microsoft.com/en-us/sql/machine-learning/data-exploration/python-dataframe-sql-server?view=sql-server-ver15
         

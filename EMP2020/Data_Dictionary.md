@@ -35,7 +35,7 @@
 |   IDMatchNameChg   | Record  has ID match, but both the name changed significantly since 2016. |
 |   NamAddrExMatch   | Record  does not have an ID match, has an exact name and address match in 2016. |
 |   NamAddrFzMatch   | Record  does not have an ID match, has an high fuzzy match for both name and address  in 2016. |
-|     NotMatch16     | Record  does not have an ID match, fuzzy name match, or fuzzy address match for 2016.  Assume these businesses do not exist in the 2016 table. |
+|     NotMatch16     | Record  does not have an ID match, fuzzy name match, or fuzzy address match for 2016.  Assume these businessegit s do not exist in the 2016 table. |
 
 
 
