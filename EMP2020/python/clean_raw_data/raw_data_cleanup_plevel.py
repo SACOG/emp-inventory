@@ -222,14 +222,14 @@ def export_to_fc(in_df, out_path):
 if __name__ == '__main__':
     csv_in = r"P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # "P:\Employment Inventory\Employment 2020\Data Axle Raw - DO NOT MODIFY\SACOG Jan 2020.csv" # r"C:\Users\dconly\GitRepos\emp-inventory\EMP2020\CSV\testrecs95814.csv"
     
-    make_csv = False
-    out_csv_dir = r'P:\Employment Inventory\Employment 2020\test_csv'
+    make_csv = True
+    out_csv_dir = r'P:\Employment Inventory\Employment 2020\CSVs with Flags'
     
-    make_fc = True
+    make_fc = False
     out_fc_name = "EmpInvTest"
     output_fgdb = r"I:\Projects\Darren\EmpInventory\EmploymentInventory.gdb"
     
-    make_sql = False
+    make_sql = True
     sql_db = "EMP2020"
     sql_tbl_name = "TestDupeFlag"
     
@@ -243,14 +243,14 @@ if __name__ == '__main__':
     
     start_time = time.time()
     
-    master_df = prep_master_df(csv_in)    
+    master_df = prep_master_df(csv_in)   
     dupe_flag_field(master_df)
     
     if make_fc:
         export_to_fc(master_df, out_fc_path) 
     
     if make_csv:
-        out_csv_name = f"{out_fc_name}.csv"
+        out_csv_name = f"{out_fc_name}{dt_suffix}.csv"
         out_csv_path = os.path.join(out_csv_dir, out_csv_name)
         master_df.to_csv(out_csv_path, index=False)
         print(f"Successfully exported CSV to {out_csv_path}")
