@@ -2,9 +2,9 @@
 
 **NOTE, THIS IS A DRAFT WORK IN PROGRESS AS OF May 2021, CHECK ALL LINK REFS WHEN FINALIZED**
 
-* About
-* Data Sources
-* Data Axle Flagging
+* [About](#about)
+* [Data Sources](#data-sources)
+* [Data Axle Flagging](#data-axle-flagging)
 
 
 
@@ -16,7 +16,7 @@ As part of developing its Metropolitan Transportation Plan-Sustainable Communiti
 * Using parcel-level employment data, track more aggregate measures of employment over time
 * Use parcel-level employment data as inputs to the SACSIM travel demand model
 
-<INSERT, AS RELEVANT, 
+
 
 
 
@@ -32,7 +32,7 @@ As part of developing its Metropolitan Transportation Plan-Sustainable Communiti
 
 Due to several of the data issues described below and for other reasons, SACOG staff incorporated several supplemental data sources into developing its employment inventory.
 
-<4/20/2021 - HOLD for link to Tina's list of metadata>
+<4/20/2021 - HOLD for link to TG list of metadata and supplemental data sources>
 
 ### Data Issues
 
@@ -44,7 +44,7 @@ While granular and detailed, the raw data set is very messy. Example issues incl
 * Businesses that are only geocoded to a site level
 * Businesses located in residential areas that are not tagged as being home-based businesses
 
-INCLUDE LINK TO ANY ADDITIONAL INFO THAT TINA WRITES FOR HER SUMMARY ON DATA ISSUES
+<INCLUDE LINK TO ANY ADDITIONAL INFO THAT TG WRITES FOR SUMMARY ON DATA ISSUES>
 
 ## Data Axle Flagging
 
@@ -60,15 +60,18 @@ The process described in this section includes the following high-level steps:
 
 #### Site-level flags
 
-The first pass of duplicate flagging happened for the roughly 84% of records that had parcel-level or entry-point-level latitude-longitude accuracy. While the process is detailed in the script `raw_data_cleanup_plevel.py`, the basic steps used the following process:
+The first pass of duplicate flagging happened for the roughly 84% of records that had parcel-level or entry-point-level latitude-longitude accuracy. While the process is detailed in the script `raw_data_cleanup_plevel.py`, the basic steps used the following process:  
 
-<INSERT LINK TO PNG IMAGE OF PROCESS EXPLAINING HOW DUPE FLAGS WERE FOUND FOR THIS>
+*Flow Diagram for Flagging Potential Duplicates for Address Level Business Locations*
+<img title='Flagging Potential Duplicates for ZIP-Code Level Business Locations' src="https://github.com/SACOG/emp-inventory/blob/ba3623f0c5e1851f5bd7cb5c5f648deb10c75909/EMP2020/DupeFlagProcess_Parcel.png">  
 
 #### ZIP-code level flags
 
 About 16% of Data Axle records were geocoded only to a ZIP code centroid. Many of these are businesses that only have a P.O. Box, for example, and thus do not have a physical parcel address. 
+  
 
-<INSERT LINK TO PNG IMAGE OF PROCESS EXPLAINING HOW DUPE FLAGS WERE FOUND FOR THIS>
+*Flow Diagram for Flagging Potential Duplicates for ZIP-Code Level Business Locations*
+<img title='Flagging Potential Duplicates for ZIP-Code Level Business Locations' src="https://github.com/SACOG/emp-inventory/blob/ba3623f0c5e1851f5bd7cb5c5f648deb10c75909/EMP2020/DupeFlagProcess_ZIP.png">
 
 ### Step 2 - Add 2016 land use data field
 
@@ -80,15 +83,15 @@ We tagged the land use data to each DA record by creating a layer of land uses f
 
 Joining several attributes from the cleaned, finalized 2016 employment inventory help determine if a 2020 record is likely to be a duplicate, as well as show changes in a business's size or location between 2016-2020, where possible. NOTE that DA data are pretty messy, and well over half of 2020 records did not have a 2016 match.
 
-The details of the process are contained in the [JoinFlags16_20.py script](https://github.com/SACOG/emp-inventory/blob/dc/improve-2016-fuzzy-tagger/EMP2020/python/JoinFlags16_20.py) which, in addition to joining 2016 records' data to 2020 records, also adds a join_flag field indicating how well the join happened (e.g., was it successful, sort of successful, etc.). The join_flag values are described in the data dictionary <INSERT LINK TO DATA DICT
+The details of the process are contained in the [JoinFlags16_20.py script](https://github.com/SACOG/emp-inventory/blob/dc/improve-2016-fuzzy-tagger/EMP2020/python/JoinFlags16_20.py) which, in addition to joining 2016 records' data to 2020 records, also adds a join_flag field indicating how well the join happened (e.g., was it successful, sort of successful, etc.). The join_flag values are described in the [data dictionary](https://github.com/SACOG/emp-inventory/blob/ba3623f0c5e1851f5bd7cb5c5f648deb10c75909/EMP2020/Data_Dictionary.md)
 
 ### Step 4 - Add school matching flags
 
-Data Axle's raw file has many inaccuracies in its records concerning school employment. To improve quality of school employment data, we integrate school employment data from (**Need data source for schools.csv**). Integration starts with flagging which Data Axle records have, or likely have, a matching record in the supplemental school data. The script  (**insert link to school flagging script**) contains the details on how we checked and flagged matches between Data Axle and the supplemental schools database. Several school flag columns were created and added to the Data Axle main table. These columns' names and descriptions are in the data dictionary <INSERT LINK TO DATA DICT
+Data Axle's raw file has many inaccuracies in its records concerning school employment. To improve quality of school employment data, we integrate school employment data from (**Need data source for schools.csv**). Integration starts with flagging which Data Axle records have, or likely have, a matching record in the supplemental school data. The script  (**insert link to school flagging script**) contains the details on how we checked and flagged matches between Data Axle and the supplemental schools database. Several school flag columns were created and added to the Data Axle main table. These columns' names and descriptions are in the [data dictionary](https://github.com/SACOG/emp-inventory/blob/ba3623f0c5e1851f5bd7cb5c5f648deb10c75909/EMP2020/Data_Dictionary.md)
 
 ### Resulting "augmented" master Data Axle table
 
-The culmination of the data flagging steps outline above is an augmented version of the raw Data Axle table that contains all the fields from the original raw table, plus the flag fields indicating potential duplicity, which school records are questionable, whether the land use makes sense for the business type, and a few other fields, which are described in more detail in the data dictionary. <INSERT LINK TO DATA DICT
+The culmination of the data flagging steps outline above is an augmented version of the raw Data Axle table that contains all the fields from the original raw table, plus the flag fields indicating potential duplicity, which school records are questionable, whether the land use makes sense for the business type, and a few other fields, which are described in more detail in the [data dictionary](https://github.com/SACOG/emp-inventory/blob/ba3623f0c5e1851f5bd7cb5c5f648deb10c75909/EMP2020/Data_Dictionary.md).
 
-Important to keep in mind is that these steps DO NOT result in the final, cleaned employment inventory. Extensive manual checks and cross-referencing of additional data sources is needed to create the final version whose employment data is used to develop the base-year land use parcel file for the MTP-SCS. These additional procedures are described in more detail in <INSERT LINK TO TINA'S DOCUMENTATION
+Important to keep in mind is that these steps DO NOT result in the final, cleaned employment inventory. Extensive manual checks and cross-referencing of additional data sources is needed to create the final version whose employment data is used to develop the base-year land use parcel file for the MTP-SCS. These additional procedures are described in more detail in <INSERT LINK TO MORE COMPREHENSIVE DOCUMENTATION WHEN AVAILABLE>.
 
